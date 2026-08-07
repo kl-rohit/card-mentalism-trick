@@ -1,5 +1,5 @@
 /* Screen — cache-first service worker. Precache everything, zero runtime network. */
-const CACHE = "screen-v1";
+const CACHE = "screen-v2";
 const ASSETS = [
   "./",
   "./index.html",
