@@ -475,8 +475,9 @@
   }
 
   /* ===================== PASSCODE ENTRY ===================== */
-  function renderDots(){ dotsEl.innerHTML=""; for(let i=0;i<settings.length;i++){ const dot=document.createElement("div"); dot.className="dot"+(i<entered.length?" filled":""); dotsEl.appendChild(dot);} }
+  function renderDots(){ dotsEl.innerHTML=""; for(let i=0;i<settings.length;i++){ const dot=document.createElement("div"); dot.className="dot"+(i<entered.length?" filled":""); dotsEl.appendChild(dot);} const c=document.getElementById("cancel"); if(c) c.textContent = entered.length>0 ? "Delete" : "Cancel"; }
   function resetEntry(){ entered=""; renderDots(); }
+  function backspace(){ if(entered.length>0){ entered=entered.slice(0,-1); renderDots(); buzz(3); } }
   const KEYPAD=[["1",""],["2","ABC"],["3","DEF"],["4","GHI"],["5","JKL"],["6","MNO"],["7","PQRS"],["8","TUV"],["9","WXYZ"],["blank",""],["0",""],["blank",""]];
   function buildKeypad(){ keypad.innerHTML=""; for(const [num,abc] of KEYPAD){ const key=document.createElement("div"); if(num==="blank"){ key.className="key blank"; keypad.appendChild(key); continue; } key.className="key"; key.dataset.num=num; key.innerHTML='<span class="num">'+num+'</span><span class="abc">'+abc+'</span>'; keypad.appendChild(key);} }
   function flashKey(num){ const el=keypad.querySelector('.key[data-num="'+num+'"]'); if(!el) return; el.classList.add("pressed"); setTimeout(function(){ el.classList.remove("pressed"); },110); }
@@ -616,7 +617,7 @@
 
   /* ===================== KEYPAD & FOOTER ===================== */
   keypad.addEventListener("click", function(e){ const k=e.target.closest(".key"); if(!k||k.classList.contains("blank")) return; pressDigit(k.dataset.num); });
-  $("cancel").addEventListener("click", function(){ if(settings.multiCard && queue.length){ beginPerformance(); } else { resetEntry(); show("lock"); } });
+  $("cancel").addEventListener("click", function(){ if(entered.length>0){ backspace(); return; } if(settings.multiCard && queue.length){ beginPerformance(); } else { resetEntry(); show("lock"); } });
   $("emergency").addEventListener("click", function(){});
 
   /* ===================== LOCK GESTURES ===================== */
@@ -649,6 +650,7 @@
   /* ===================== KEYBOARD (desktop rehearsal) ===================== */
   document.addEventListener("keydown", function(e){
     if(e.key==="Escape"){ reset(); return; }
+    if(state==="passcode" && (e.key==="Backspace"||e.key==="Delete")){ backspace(); return; }
     if(state==="passcode" && e.key>="0" && e.key<="9") pressDigit(e.key);
     else if(state==="lock" && document.documentElement.hasAttribute("data-armed") && (e.key==="ArrowRight"||e.key===".")) advanceCard();
     else if(state==="lock" && (e.key===" "||e.key==="Enter")) openPasscode();
